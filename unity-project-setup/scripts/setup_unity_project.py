@@ -7,6 +7,7 @@
   3. manifest.json에서 불필요 패키지 제거, packages-lock.json 삭제 (에디터가 재생성)
   4. ProjectSettings 화면 방향 고정 (기본 세로)
   5. 루트에 .gitignore(.gitignore 경로 접두어 치환) / .gitattributes / .editorconfig 복사
+  6. --asmdef <Namespace>: asmdef 6개 생성 (계층 의존 강제)
 
 사용 예:
   python setup_unity_project.py --root C:/project/MyGame --unity-dir MyGameUnity
@@ -176,6 +177,48 @@ def step_orientation(unity, landscape):
     log(f"화면 방향: {'가로' if landscape else '세로'} 고정")
 
 
+ASMDEF_TEMPLATE = {
+    "name": "", "rootNamespace": "", "references": [], "includePlatforms": [], "excludePlatforms": [],
+    "allowUnsafeCode": False, "overrideReferences": False, "precompiledReferences": [], "autoReferenced": True,
+    "defineConstraints": [], "versionDefines": [], "noEngineReferences": False,
+}
+
+
+def step_asmdefs(unity, ns):
+    """asmdef 6개: Core/Data(noEngineReferences) -> Game -> UI, Editor, Tests.EditMode. 이미 있으면 건너뜀."""
+    specs = [
+        ("Scripts/Core", f"{ns}.Core", [], {"noEngineReferences": True}),
+        ("Scripts/Data", f"{ns}.Data", [f"{ns}.Core"],
+         {"noEngineReferences": True, "overrideReferences": True, "precompiledReferences": ["Newtonsoft.Json.dll"]}),
+        ("Scripts/Game", f"{ns}.Game", [f"{ns}.Core", f"{ns}.Data", "UnityEngine.UI", "Unity.InputSystem"], {}),
+        ("Scripts/UI", f"{ns}.UI", [f"{ns}.Core", f"{ns}.Game", "UnityEngine.UI", "Unity.TextMeshPro"], {}),
+        ("Scripts/Editor", f"{ns}.Editor", [f"{ns}.Core", f"{ns}.Data", f"{ns}.Game", f"{ns}.UI"],
+         {"includePlatforms": ["Editor"]}),
+        ("Tests/EditMode", f"{ns}.Tests.EditMode",
+         [f"{ns}.Core", f"{ns}.Data", f"{ns}.UI", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+         {"includePlatforms": ["Editor"], "overrideReferences": True, "precompiledReferences": ["nunit.framework.dll"],
+          "autoReferenced": False, "defineConstraints": ["UNITY_INCLUDE_TESTS"]}),
+    ]
+    made = 0
+    for folder, name, refs, extra in specs:
+        d = os.path.join(unity, "Assets", folder)
+        os.makedirs(d, exist_ok=True)
+        path = os.path.join(d, name + ".asmdef")
+        if os.path.exists(path):
+            continue
+        j = dict(ASMDEF_TEMPLATE)
+        j.update(extra)
+        j["name"] = name
+        j["rootNamespace"] = f"{ns}.Tests" if name.endswith(".Tests.EditMode") else name
+        j["references"] = refs
+        write_text(path, json.dumps(j, indent=2, ensure_ascii=False) + "\n")
+        gk = os.path.join(d, ".gitkeep")
+        if os.path.exists(gk):
+            os.remove(gk)
+        made += 1
+    log(f"asmdef {made}개 생성 (네임스페이스 {ns}). 에디터가 열려 있으면 .meta는 Refresh 시 생성됨")
+
+
 def step_root_files(root, unity_dir):
     pairs = [("gitignore", ".gitignore"), ("gitattributes", ".gitattributes"), ("editorconfig", ".editorconfig")]
     for src, dst in pairs:
@@ -197,6 +240,7 @@ def main():
     ap.add_argument("--landscape", action="store_true", help="가로 고정 (기본 세로)")
     ap.add_argument("--keep-packages", action="store_true", help="불필요 패키지를 제거하지 않음")
     ap.add_argument("--add-newtonsoft", action="store_true", help="com.unity.nuget.newtonsoft-json 직접 의존 추가")
+    ap.add_argument("--asmdef", metavar="NAMESPACE", help="asmdef 6개 생성(Core/Data/Game/UI/Editor/Tests.EditMode), 예: ZooTycoon")
     ap.add_argument("--skip-root-files", action="store_true")
     a = ap.parse_args()
 
@@ -209,6 +253,8 @@ def main():
     step_scene(unity, a.scene_name)
     step_packages(unity, a.keep_packages, a.add_newtonsoft)
     step_orientation(unity, a.landscape)
+    if a.asmdef:
+        step_asmdefs(unity, a.asmdef)
     if not a.skip_root_files:
         step_root_files(root, a.unity_dir)
     log("완료. 다음: CLAUDE.md 작성, git init, 에디터 열려 있으면 unity command package_resolve")

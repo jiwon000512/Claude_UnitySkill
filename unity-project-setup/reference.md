@@ -54,7 +54,7 @@ git push -u origin main
 
 작업 트리에 미커밋 변경이 있으면 `git stash push -u` 후 리베이스하고 `git stash pop`. 원격의 GitHub 기본 Unity .gitignore는 유니티 폴더가 루트라고 가정하므로 우리 것으로 덮는다. 연결 뒤 CLAUDE.md에 원격 주소를 적는다.
 
-### 3.3 폴더 구조 (기본값: Assets 바로 아래 종류별, asmdef 없음)
+### 3.3 폴더 구조 (기본값: Assets 바로 아래 종류별 + asmdef 6개)
 
 ```
 Assets/
@@ -69,7 +69,7 @@ Assets/
 
 - 새 폴더마다 **`.meta`를 함께 만든다** (`folderAsset: yes`, guid는 임의 32자리 hex). 에디터가 열려 있을 때 폴더만 만들면 에디터가 자기 guid로 만들고, 닫혀 있을 때도 다음 실행 때 만들어 주지만, 직접 만들면 커밋 시점에 이미 존재해 이력이 깔끔하다.
 - 빈 폴더는 `.gitkeep`으로 유지한다. Unity는 점(.)으로 시작하는 파일을 무시하므로 `.meta`가 생기지 않는다. 하위 폴더가 있는 폴더에는 넣지 않는다.
-- `Core/`는 UnityEngine을 참조하지 않는다(에디터 없이 테스트하기 위한 규칙). asmdef 없이 규칙으로만 지킨다.
+- asmdef 6개(Core/Data/Game/UI/Editor/Tests.EditMode)로 계층 의존 방향을 컴파일러가 강제한다. Core·Data는 `noEngineReferences: true`. 처음에는 asmdef 없이 가려 했으나 EditMode 테스트가 게임 코드를 참조하려면 asmdef가 필요하고, 계층 위반을 컴파일 오류로 잡는 이점이 커서 2026-09-13에 바꿨다. 상세는 `templates/code-rules.md` 2장.
 - 템플릿 씬(`SampleScene`)은 `Main`으로 이름 변경. `.unity`와 `.meta`를 함께 옮겨 guid를 유지하고 `ProjectSettings/EditorBuildSettings.asset`의 경로를 고친다.
 
 이 폴더의 `scripts/setup_unity_project.py`가 3.3~3.5를 한 번에 수행한다.
@@ -189,3 +189,4 @@ UTF-8, LF, 마지막 줄 개행, 공백 4칸(json/asmdef/yml은 2칸). C#: 여�
 
 - v1.0 (2026-09-13) 동물원 타이쿤 기반 세팅·데이터 테이블 결정을 일반화해 최초 작성 (Tycoon 저장소 `기획/유니티-프로젝트-초기-세팅-가이드.md`로 시작)
 - v1.1 (2026-09-13) 원본을 스킬 폴더로 이동. GitHub 원격 연결 절차 추가. 질문 표는 SKILL.md로 분리
+- v1.2 (2026-09-13) 코드 규칙(asmdef 계층 강제·MVP·수동 DI·C# event) 추가. 스크립트 `--asmdef` 옵션

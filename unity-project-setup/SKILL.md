@@ -37,7 +37,7 @@ git --version; which unity; tasklist | grep -i "^Unity.exe"
 |---|---|---|
 | 1 | 이번 세션에서 가장 먼저 만들 것은? | ① 프로젝트 기반 세팅 ② 코어 로직 + 임시 UI 수직 슬라이스 ③ 코어 로직만 ④ 기획 미결 항목 마무리 |
 | 2 | git 저장소는? | ① 루트에 하나(기획 + 유니티) ② 유니티 폴더에만 ③ 루트 + GitHub 원격 바로 생성 ④ 이번엔 안 함 |
-| 3 | Assets 폴더 구조와 코드 계층은? | ① Assets 바로 아래 종류별 + asmdef 없음 ② _Game 하위 + asmdef(Core/Game) ③ 기능별 폴더 |
+| 3 | Assets 폴더 구조와 코드 계층은? | ① Assets 바로 아래 종류별 + asmdef 6개로 계층 강제(Core/Data/Game/UI/Editor/Tests) ② 종류별 + asmdef 2개(순수 C#/Unity) ③ 종류별, asmdef 없음 |
 | 4 | UI 시스템은? | ① uGUI + TextMeshPro ② UI Toolkit |
 | 5 | 제품명·회사명·패키지 ID는? | ① 템플릿 기본값 유지 ② 임시값 지정 ③ 직접 입력 |
 | 6 | 불필요 패키지는? | ① 제거 ② 그대로 둠 ③ 제거 + TMP Essentials 임포트 |
@@ -46,8 +46,11 @@ git --version; which unity; tasklist | grep -i "^Unity.exe"
 | 9 | JSON 파일 구성은? | ① 테이블당 1개 ② 전체 1파일 ③ 항목당 1파일 |
 | 10 | JSON에서 에셋 참조는? | ① ID 기반 경로 + Resources.Load ② JSON에 경로 필드 ③ Addressables |
 | 11 | 데이터 작업 범위는? | ① 규칙 문서 + JSON ② + Core 모델·로더·검증·테스트 ③ 규칙 문서만 |
+| 12 | UI 패턴은? | ① MVP(View MonoBehaviour + Presenter 순수 C#) ② MVVM + R3 ③ View가 모델 직접 구독 |
+| 13 | 의존성 주입은? | ① 수동 컴포지션 루트 + 생성자 주입 ② VContainer ③ SO 서비스 로케이터 |
+| 14 | 이벤트·비동기는? | ① 순수 C# event + 동기 틱 ② C# event + UniTask ③ R3 |
 
-질문하지 않고 기본 적용: 세로 고정(기획서가 가로면 가로), 기준 해상도 1080×1920, 코드 규칙(`_camelCase`, 중괄호 새 줄, 4칸), 커밋 정책. 7~11은 데이터 테이블 작업에 들어갈 때 묻는다.
+질문하지 않고 기본 적용: 세로 고정(기획서가 가로면 가로), 기준 해상도 1080×1920, 스타일(`_camelCase`, 중괄호 새 줄, 4칸), 커밋 정책. 7~11은 데이터 테이블 작업에 들어갈 때, 12~14는 코드 규칙을 정할 때(첫 코드 작성 전) 묻는다.
 
 ## 2. 기반 세팅 실행 (질문 1~6 뒤)
 
@@ -59,7 +62,7 @@ python ~/.claude/skills/unity-project-setup/scripts/setup_unity_project.py \
   [--landscape] [--keep-packages] [--scene-name Main] [--add-newtonsoft]
 ```
 
-스크립트가 하는 일: `Assets/{Scenes,Scripts/{Core,Data,Game,UI,Editor},Resources/{Data,Sprites},Prefabs/UI,Sprites/UI,Fonts,Audio,Tests/EditMode}` 생성 + 폴더 .meta + 잎 폴더 .gitkeep, `SampleScene`→`Main` 이름 변경(guid 유지, EditorBuildSettings 반영), manifest에서 제거 목록 삭제 + `packages-lock.json` 삭제, ProjectSettings 화면 방향, 루트에 `.gitignore`(접두어 치환)·`.gitattributes`·`.editorconfig` 복사.
+스크립트가 하는 일: `Assets/{Scenes,Scripts/{Core,Data,Game,UI,Editor},Resources/{Data,Sprites},Prefabs/UI,Sprites/UI,Fonts,Audio,Tests/EditMode}` 생성 + 폴더 .meta + 잎 폴더 .gitkeep, `--asmdef <Namespace>`로 asmdef 6개(Core·Data는 noEngineReferences, Data는 Newtonsoft.Json.dll 참조, Game/UI는 UnityEngine.UI·Unity.InputSystem·Unity.TextMeshPro 참조, Tests는 TestRunner) 생성, `SampleScene`→`Main` 이름 변경(guid 유지, EditorBuildSettings 반영), manifest에서 제거 목록 삭제 + `packages-lock.json` 삭제, ProjectSettings 화면 방향, 루트에 `.gitignore`(접두어 치환)·`.gitattributes`·`.editorconfig` 복사.
 
 수동으로 할 것:
 1. `templates/CLAUDE.md.template`을 채워 루트 `CLAUDE.md` 작성. `{{GAME_NAME}}`, `{{UNITY_DIR}}`, `{{UNITY_VERSION}}`, `{{PLAN_DOC}}` 치환, 기술 결정 표를 답변대로 고침.
@@ -80,6 +83,13 @@ python ~/.claude/skills/unity-project-setup/scripts/setup_unity_project.py \
 4. ID 기반 로드용 스프라이트 폴더는 `Assets/Resources/Sprites/<종류>/` (Resources 밖이면 `Resources.Load` 불가).
 5. Newtonsoft 선택 시 manifest에 `com.unity.nuget.newtonsoft-json`을 직접 의존으로 추가(버전은 `Library/PackageCache` 것과 맞춤). 스크립트의 `--add-newtonsoft`.
 6. 범위 ②면 Core에 레코드·로더·검증기, `Tests/EditMode`에 규칙 문서 7장의 검증 테스트.
+
+## 3-1. 코드 규칙 (질문 12~14 뒤, 첫 코드 작성 전)
+
+1. `templates/code-rules.md`를 `기획/코드-규칙.md`로 복사하고 `{{NAMESPACE}}`와 8장 클래스 지도를 채운다. 계층 강제(asmdef)·MVP·수동 DI·C# event가 기본값이며, 답이 다르면 1장 결정 표와 해당 절만 고친다.
+2. asmdef가 아직 없으면 `scripts/setup_unity_project.py --asmdef <Namespace>`로 생성(에디터가 열려 있으면 `unity command write_text_file`로 써도 된다). Newtonsoft는 `unity command package_add --identifier com.unity.nuget.newtonsoft-json@<ver> --confirm true --wait true`.
+3. CLAUDE.md 「코드 규칙」절은 핵심 금지·필수 항목 5~6줄과 `기획/코드-규칙.md` 링크만 둔다. 문서 전문을 복제하지 않는다.
+4. 기능 구현은 코드-규칙 6장 절차대로: 설계 목록(계층/클래스/책임/의존) → 사용자 확인 → Core·Data → Game → UI → CLI 검증(컴파일 0·콘솔 0·테스트).
 
 ## 4. 기획서 반영
 
@@ -114,3 +124,4 @@ JSON을 만든 뒤에는 Refresh로 `.meta`를 생성시키고 `Resources.Load<T
 - 폴더 `.meta`는 직접 만들어도 된다(`folderAsset: yes`, 임의 guid). 씬 이름 변경은 `.unity`와 `.meta`를 함께 옮겨 guid를 유지한다.
 - Windows `core.autocrlf=true`의 CRLF 경고는 무시 가능(.gitattributes로 저장소 쪽 LF 통일).
 - 활성 빌드 타깃 전환(→ Android)은 전체 리임포트라 첫 기기 빌드 직전에 한다.
+- Unity CLI로 개발할 때: `eval`은 `using` 문을 받지 않으므로 여러 줄 C#은 `run_script --file <cs> --entry Type.Method`로 실행한다. Git Bash에서는 `/Canvas/Button` 같은 계층 경로가 윈도 경로로 바뀌므로 `export MSYS_NO_PATHCONV=1`을 먼저 둔다. Screen Space Overlay UI 캡처는 플레이 모드에서 `capture_game_view --source screen`으로만 된다(저장 경로는 Assets 기준). TMP Essential Resources는 `AssetDatabase.ImportPackage(<ugui 패키지>/Package Resources/TMP Essential Resources.unitypackage, false)`로 비대화식 임포트가 된다. `run_tests`는 동기 호출이 CLI 타임아웃(180s)에 걸릴 수 있어 `--async_tests true` 후 `test_status`로 폴링한다. EditMode 테스트는 asmdef가 있어야 게임 코드를 참조할 수 있다.
