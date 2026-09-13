@@ -1,9 +1,9 @@
-# claude-skills
+# Claude_UnitySkill
 
 Claude Code 사용자 전역 스킬 모음. `~/.claude/skills`에 clone해서 쓴다.
 
 ```bash
-git clone https://github.com/jiwon000512/claude-skills.git ~/.claude/skills
+git clone https://github.com/jiwon000512/Claude_UnitySkill.git ~/.claude/skills
 ```
 
 | 스킬 | 용도 |
