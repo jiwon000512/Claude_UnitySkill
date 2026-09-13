@@ -49,8 +49,13 @@ git --version; which unity; tasklist | grep -i "^Unity.exe"
 | 12 | UI 패턴은? | ① MVP(View MonoBehaviour + Presenter 순수 C#) ② MVVM + R3 ③ View가 모델 직접 구독 |
 | 13 | 의존성 주입은? | ① 수동 컴포지션 루트 + 생성자 주입 ② VContainer ③ SO 서비스 로케이터 |
 | 14 | 이벤트·비동기는? | ① 순수 C# event + 동기 틱 ② C# event + UniTask ③ R3 |
+| 15 | 공통 기반(GameKit) 접근 방식은? | ① MonoSingleton<T> Manager(lazy 자기 초기화, Game·UI 계층만 접근) ② 컴포지션 루트 주입만 ③ 제한된 서비스 로케이터 |
+| 16 | 오류 전달은? | ① 예상된 실패는 Result/TryXxx, 버그는 예외 ② 예외 중심 ③ bool + 로그 |
+| 17 | private 필드 접두어는? | ① m_ (static s_, const k_; Unity 6판 예시 권장) ② _ ③ 없음 |
+| 18 | 중괄호는? | ① Allman(새 줄) ② K&R(같은 줄, Unity 예시) |
+| 19 | 이벤트 핸들러 이름은? | ① Subject_EventName(Unity 예시) ② HandleEventName ③ OnEventName |
 
-질문하지 않고 기본 적용: 세로 고정(기획서가 가로면 가로), 기준 해상도 1080×1920, 스타일(`_camelCase`, 중괄호 새 줄, 4칸), 커밋 정책. 7~11은 데이터 테이블 작업에 들어갈 때, 12~14는 코드 규칙을 정할 때(첫 코드 작성 전) 묻는다.
+질문하지 않고 기본 적용: 세로 고정(기획서가 가로면 가로), 기준 해상도 1080×1920, 스타일(`_camelCase`, 중괄호 새 줄, 4칸), 커밋 정책. 7~11은 데이터 테이블 작업에 들어갈 때, 12~19는 코드 규칙·프로그래밍 규약을 정할 때(첫 코드 작성 전) 묻는다. 프로그래밍 규약의 기준은 Unity 6판 C# 스타일 가이드(unity.com/kr/resources/c-sharp-style-guide-unity-6, 예시 저장소 thomasjacobsen-unity/Unity-Code-Style-Guide)이며, 가이드가 팀 선택으로 남긴 것만 묻는다.
 
 ## 2. 기반 세팅 실행 (질문 1~6 뒤)
 
@@ -88,8 +93,10 @@ python ~/.claude/skills/unity-project-setup/scripts/setup_unity_project.py \
 
 1. `templates/code-rules.md`를 `기획/코드-규칙.md`로 복사하고 `{{NAMESPACE}}`와 8장 클래스 지도를 채운다. 계층 강제(asmdef)·MVP·수동 DI·C# event가 기본값이며, 답이 다르면 1장 결정 표와 해당 절만 고친다.
 2. asmdef가 아직 없으면 `scripts/setup_unity_project.py --asmdef <Namespace>`로 생성(에디터가 열려 있으면 `unity command write_text_file`로 써도 된다). Newtonsoft는 `unity command package_add --identifier com.unity.nuget.newtonsoft-json@<ver> --confirm true --wait true`.
-3. CLAUDE.md 「코드 규칙」절은 핵심 금지·필수 항목 5~6줄과 `기획/코드-규칙.md` 링크만 둔다. 문서 전문을 복제하지 않는다.
-4. 기능 구현은 코드-규칙 6장 절차대로: 설계 목록(계층/클래스/책임/의존) → 사용자 확인 → Core·Data → Game → UI → CLI 검증(컴파일 0·콘솔 0·테스트).
+3. `templates/programming-conventions.md`를 `기획/프로그래밍-규약.md`로 복사하고 1장 결정 표를 답변(15~19)대로 고친다. `.editorconfig`는 `templates/editorconfig`(m_/s_/k_·Allman 기준)를 쓰고, 답이 다르면 접두어·중괄호 항목만 바꾼다.
+4. CLAUDE.md 「코드 규칙」절은 핵심 금지·필수 항목 5~6줄과 두 문서 링크만 둔다. 문서 전문을 복제하지 않는다.
+5. 공통 기반은 GameKit UPM 패키지(jiwon000512/UnityGameKit)를 manifest에 git URL로 추가한다. 게임 코드에서 새로 만들지 않는다.
+6. 기능 구현은 코드-규칙 6장 절차대로: 설계 목록(계층/클래스/책임/의존) → 사용자 확인 → Core·Data → Game → UI → CLI 검증(컴파일 0·콘솔 0·테스트).
 
 ## 4. 기획서 반영
 

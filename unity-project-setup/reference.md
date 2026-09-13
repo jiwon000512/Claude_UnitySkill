@@ -190,3 +190,4 @@ UTF-8, LF, 마지막 줄 개행, 공백 4칸(json/asmdef/yml은 2칸). C#: 여�
 - v1.0 (2026-09-13) 동물원 타이쿤 기반 세팅·데이터 테이블 결정을 일반화해 최초 작성 (Tycoon 저장소 `기획/유니티-프로젝트-초기-세팅-가이드.md`로 시작)
 - v1.1 (2026-09-13) 원본을 스킬 폴더로 이동. GitHub 원격 연결 절차 추가. 질문 표는 SKILL.md로 분리
 - v1.2 (2026-09-13) 코드 규칙(asmdef 계층 강제·MVP·수동 DI·C# event) 추가. 스크립트 `--asmdef` 옵션
+- v1.3 (2026-09-13) 프로그래밍 규약 템플릿(Unity 6판 가이드 기준, m_/s_/k_, Allman, Subject_EventName, Result 객체), GameKit 패키지·MonoSingleton Manager 결정 추가. .editorconfig 템플릿 갱신
