@@ -1,0 +1,56 @@
+# ===== Unity ({{UNITY_DIR}}/) =====
+{{UNITY_DIR}}/[Ll]ibrary/
+{{UNITY_DIR}}/[Tt]emp/
+{{UNITY_DIR}}/[Oo]bj/
+{{UNITY_DIR}}/[Bb]uild/
+{{UNITY_DIR}}/[Bb]uilds/
+{{UNITY_DIR}}/[Ll]ogs/
+{{UNITY_DIR}}/[Uu]ser[Ss]ettings/
+{{UNITY_DIR}}/[Mm]emoryCaptures/
+{{UNITY_DIR}}/[Rr]ecordings/
+
+# Asset Store tools / plugins
+{{UNITY_DIR}}/[Aa]ssets/AssetStoreTools*
+{{UNITY_DIR}}/[Aa]ssets/Plugins/Editor/JetBrains*
+
+# IDE
+.vs/
+.idea/
+.vscode/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Unity generated
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+*.apk
+*.aab
+*.unitypackage
+*.app
+crashlytics-build.properties
+{{UNITY_DIR}}/[Aa]ssets/[Ss]treamingAssets/aa.meta
+{{UNITY_DIR}}/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Claude local settings
+.claude/settings.local.json
